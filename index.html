@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fridge to Feast</title>
+  <title>Fridge to Feast — Turn your ingredients into a meal</title>
+  <meta name="description" content="Add what you have in your fridge, pick a cuisine, and get a full recipe with nutrition facts instantly." />
+
+  <!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+  <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -26,7 +31,7 @@
       background: var(--bg-tertiary);
       color: var(--text-primary);
       min-height: 100vh;
-      padding: 2rem 1rem 4rem;
+      padding: 1.5rem 1rem 4rem;
     }
 
     .app {
@@ -36,12 +41,12 @@
 
     /* Header */
     .app-header {
-      margin-bottom: 2rem;
+      margin-bottom: 1rem;
     }
 
     .app-title {
       font-size: 28px;
-      font-weight: 600;
+      font-weight: 700;
       letter-spacing: -0.5px;
       color: var(--accent);
     }
@@ -49,8 +54,30 @@
     .app-subtitle {
       font-size: 14px;
       color: var(--text-secondary);
-      margin-top: 6px;
+      margin-top: 5px;
+      line-height: 1.5;
     }
+
+    /* Ad banner */
+    .ad-slot {
+      width: 100%;
+      min-height: 90px;
+      background: var(--bg-primary);
+      border: 0.5px dashed var(--border-medium);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-tertiary);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    /* Hides placeholder text once a real ad fills in */
+    .ad-slot ins { display: block; width: 100%; }
 
     /* Card wrapper */
     .card {
@@ -119,8 +146,34 @@
     .add-btn:hover { background: var(--bg-tertiary); }
 
     /* Chips */
-    .chips-container {
+    .chips-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin-top: 12px;
+      min-height: 20px;
+    }
+
+    .chips-count {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      font-size: 12px;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      padding: 0;
+      text-decoration: underline;
+      transition: color 0.15s;
+    }
+
+    .clear-btn:hover { color: var(--accent); }
+
+    .chips-container {
+      margin-top: 8px;
       min-height: 32px;
       display: flex;
       flex-wrap: wrap;
@@ -358,6 +411,25 @@
       font-weight: 400;
     }
 
+    /* Try again button */
+    .try-again-btn {
+      display: block;
+      width: 100%;
+      margin-top: 1.25rem;
+      padding: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 0.5px solid var(--border-medium);
+      border-radius: var(--radius-md);
+      transition: background 0.15s;
+      text-align: center;
+    }
+
+    .try-again-btn:hover { background: var(--bg-tertiary); }
+
     /* Error */
     .error-msg {
       background: #fff5f5;
@@ -368,8 +440,6 @@
       color: #a02020;
       margin-top: 1rem;
     }
-
-    
 
     @media (max-width: 480px) {
       .input-row { flex-direction: column; }
@@ -385,14 +455,28 @@
   <!-- Header -->
   <div class="app-header">
     <div class="app-title">Fridge to Feast</div>
-    <div class="app-subtitle">Add what you have, pick your region, get a recipe with full nutrition facts.</div>
+    <div class="app-subtitle">Add whatever you have — even just 2 ingredients — and get a real recipe in seconds.</div>
   </div>
+
+  <!-- Ad Slot: Top Banner -->
+  <!-- Replace the comment below with your actual AdSense ins tag when ready -->
+  <!--
+  <div class="ad-slot">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  -->
 
   <!-- Step 1: Add Ingredients -->
   <div class="card">
-    <div class="step-label">Step 1 — Add your ingredients</div>
+    <div class="step-label">Step 1 — What's in your fridge?</div>
     <div class="input-row">
-      <input type="text" id="ingr-name" placeholder="e.g. Tomato, Paneer, Chicken..." />
+      <input type="text" id="ingr-name" placeholder="e.g. Tomato, Eggs, Paneer, Chicken…" />
       <input type="number" id="ingr-qty" placeholder="Qty" min="1" />
       <select class="unit-select" id="ingr-unit">
         <option value="g">grams</option>
@@ -406,15 +490,20 @@
       </select>
       <button class="add-btn" onclick="addIngredient()">+ Add</button>
     </div>
+    <div class="chips-header" id="chips-header" style="display:none;">
+      <span class="chips-count" id="chips-count"></span>
+      <button class="clear-btn" onclick="clearAll()">Clear all</button>
+    </div>
     <div class="chips-container" id="chips-container">
-      <span class="empty-hint">No ingredients added yet.</span>
+      <span class="empty-hint">No ingredients added yet. Qty is optional.</span>
     </div>
   </div>
 
   <!-- Step 2: Choose Region -->
   <div class="card">
-    <div class="step-label">Step 2 — Choose your region / cuisine</div>
+    <div class="step-label">Step 2 — Pick a cuisine (optional)</div>
     <select class="region-select" id="region-select">
+      <option value="Surprise Me">Surprise Me — Any cuisine</option>
       <optgroup label="Indian States">
         <option value="Andhra Pradesh / Telugu">Andhra Pradesh (Telugu)</option>
         <option value="Assam / Assamese">Assam (Assamese)</option>
@@ -453,8 +542,22 @@
 
   <!-- Generate Button -->
   <button class="generate-btn" id="gen-btn" onclick="generateRecipe()">
-    Generate My Recipe
+    Find My Recipe
   </button>
+
+  <!-- Ad Slot: Mid-page (shown after user clicks generate) -->
+  <!-- Replace the comment below with your actual AdSense ins tag when ready -->
+  <!--
+  <div class="ad-slot" id="ad-mid" style="margin-top: 1rem;">
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-XXXXXXXXXXXXXXXX"
+         data-ad-slot="XXXXXXXXXX"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  -->
 
   <!-- Result Area -->
   <div id="result-area"></div>
@@ -464,7 +567,6 @@
 <script>
   /* ── State ── */
   const ingredients = [];
-
 
   /* ── Add Ingredient ── */
   function addIngredient() {
@@ -497,13 +599,27 @@
     renderChips();
   }
 
+  /* ── Clear All ── */
+  function clearAll() {
+    ingredients.length = 0;
+    renderChips();
+  }
+
   /* ── Render Chips ── */
   function renderChips() {
-    const container = document.getElementById('chips-container');
+    const container  = document.getElementById('chips-container');
+    const header     = document.getElementById('chips-header');
+    const countLabel = document.getElementById('chips-count');
+
     if (!ingredients.length) {
-      container.innerHTML = '<span class="empty-hint">No ingredients added yet.</span>';
+      header.style.display = 'none';
+      container.innerHTML  = '<span class="empty-hint">No ingredients added yet. Qty is optional.</span>';
       return;
     }
+
+    header.style.display = 'flex';
+    countLabel.textContent = `${ingredients.length} ingredient${ingredients.length > 1 ? 's' : ''} added`;
+
     container.innerHTML = ingredients.map((ing, i) => {
       const qtyLabel = ing.qty ? ` · ${ing.qty} ${ing.unit}` : '';
       return `
@@ -518,7 +634,7 @@
   /* ── Generate Recipe ── */
   async function generateRecipe() {
     if (!ingredients.length) {
-      alert('Please add at least one ingredient first!');
+      alert('Add at least one ingredient first!');
       return;
     }
 
@@ -526,13 +642,17 @@
     const btn        = document.getElementById('gen-btn');
     const resultArea = document.getElementById('result-area');
 
-    btn.disabled     = true;
-    btn.textContent  = 'Cooking up your recipe...';
+    btn.disabled    = true;
+    btn.textContent = 'Finding your recipe…';
+
+    const loadingMsg = region === 'Surprise Me'
+      ? 'Picking the best recipe for your ingredients…'
+      : `Finding a perfect ${region} recipe for your ingredients…`;
 
     resultArea.innerHTML = `
       <div class="loading-wrap">
         <div class="loading-dots"><span></span><span></span><span></span></div>
-        <div class="loading-text">Finding the perfect ${region} recipe for your ingredients…</div>
+        <div class="loading-text">${loadingMsg}</div>
       </div>`;
 
     const ingredientList = ingredients
@@ -571,41 +691,39 @@
       "American": "American home cooking is hearty and comforting. Common dishes are mac and cheese, grilled cheese sandwich, chicken soup, meatloaf, mashed potatoes, and pancakes. Butter, cheese, and simple seasonings are key. The taste is rich, filling, and comforting."
     };
 
-    const authGuide = regionGuide[region] || "Make a recipe that native people of this region actually eat at home every day.";
+    let authGuide, cuisineInstruction;
+    if (region === 'Surprise Me') {
+      authGuide = '';
+      cuisineInstruction = `Pick the BEST cuisine and dish that works perfectly with the user's ingredients. Choose any cuisine from the world — Indian, Chinese, Italian, Mexican, Thai, Middle Eastern, American, etc. Pick whatever dish would taste best and be simplest to make with these exact ingredients.`;
+    } else {
+      authGuide = regionGuide[region] || '';
+      cuisineInstruction = `Make a dish from ${region} cuisine. ${authGuide ? `\n\nABOUT THIS CUISINE:\n${authGuide}` : ''}`;
+    }
 
-    const prompt = `You are a home cooking expert who knows exactly what people eat in different parts of India and the world.
+    const prompt = `You are a home cooking expert who knows recipes from every part of the world.
 
 The user has these ingredients: ${ingredientList}.
-They want a recipe from this region: ${region}.
-
-HERE IS WHAT YOU MUST KNOW ABOUT THIS REGION'S FOOD:
-${authGuide}
+${cuisineInstruction}
 
 STRICT RULES — follow every single one:
 
-RULE 1 — BE TRULY AUTHENTIC:
-Only suggest a dish that people in ${region} actually cook and eat at home regularly. The dish must match the real taste, cooking style, and food culture of that region. Think: Would a grandmother from ${region} cook this exact dish? If no, pick a different dish that fits.
+RULE 1 — REALISTIC DISH: Only suggest a dish that people actually cook and eat at home. The dish must be genuinely cookable with the listed ingredients plus basic pantry staples.
 
-RULE 2 — MATCH THE REGIONAL TASTE:
-The spices, technique, and flavors must match the region. For example — Andhra food must be spicy and use tamarind. Bengali food must use mustard oil. Gujarati food must be slightly sweet. Do not ignore the regional taste profile.
+RULE 2 — SIMPLE COMMON INGREDIENTS ONLY: Only use ingredients found in a normal home kitchen — salt, oil, onion, garlic, ginger, tomato, green chili, red chili powder, turmeric, cumin, coriander powder, mustard seeds, curry leaves, ghee, butter, milk, rice, flour, sugar, jaggery, tamarind, lemon, yogurt, water. Do NOT add rare or hard-to-find items.
 
-RULE 3 — SIMPLE COMMON INGREDIENTS ONLY:
-Only use ingredients found in a normal home kitchen — salt, oil, onion, garlic, ginger, tomato, green chili, red chili powder, turmeric, cumin, coriander powder, mustard seeds, curry leaves, ghee, butter, milk, rice, flour, sugar, jaggery, tamarind, lemon, yogurt, water. Do NOT add rare or hard-to-find items.
-
-RULE 4 — SIMPLE ENGLISH ONLY:
-Write every step in short, easy sentences. Use the simplest words possible.
+RULE 3 — SIMPLE ENGLISH ONLY: Write every step in short, easy sentences. Use the simplest words possible.
 BAD: "Saute the aromatics until translucent and deglaze with stock."
-GOOD: "Cook the onion in oil for 3 minutes until soft and light brown. Pour in water and mix."
+GOOD: "Cook the onion in oil for 3 minutes until soft and light brown."
 Anyone with basic English must be able to follow each step.
 
-RULE 5 — SHORT STEPS: Each step = 1 to 2 sentences only. No long paragraphs.
+RULE 4 — SHORT STEPS: Each step = 1 to 2 sentences only. No long paragraphs.
 
-RULE 6 — USE THE USER'S INGREDIENTS: Build the recipe around what the user already has. Only add very basic things if needed.
+RULE 5 — USE THE USER'S INGREDIENTS: Build the recipe around what the user already has. Only add very basic pantry items if truly needed.
 
 Respond ONLY with a valid JSON object — no markdown, no extra text:
 {
-  "recipe_name": "Actual name of the dish as locals call it",
-  "cuisine": "${region}",
+  "recipe_name": "Actual name of the dish",
+  "cuisine": "Name of the cuisine / region",
   "servings": 2,
   "prep_time": "10 mins",
   "cook_time": "20 mins",
@@ -616,7 +734,7 @@ Respond ONLY with a valid JSON object — no markdown, no extra text:
     "Step written in simple English",
     "Next step in simple English"
   ],
-  "chef_tip": "One short practical tip that a local cook from this region would give",
+  "chef_tip": "One short practical tip",
   "nutrition_per_serving": {
     "calories": 350,
     "protein_g": 18,
@@ -627,8 +745,7 @@ Respond ONLY with a valid JSON object — no markdown, no extra text:
   }
 }
 
-Nutrition values must be realistic. The dish must be something the native people of ${region} genuinely eat at home.`;
-
+Nutrition values must be realistic.`;
 
     try {
       const response = await fetch("/api/recipe", {
@@ -651,7 +768,7 @@ Nutrition values must be realistic. The dish must be something the native people
         </div>`;
     } finally {
       btn.disabled    = false;
-      btn.textContent = 'Generate My Recipe';
+      btn.textContent = 'Find My Recipe';
     }
   }
 
@@ -688,7 +805,7 @@ Nutrition values must be realistic. The dish must be something the native people
         <div class="recipe-name">${r.recipe_name}</div>
         <div class="recipe-meta">${metaParts.join(' &nbsp;·&nbsp; ')}</div>
 
-        <div class="result-section-title">Ingredients used</div>
+        <div class="result-section-title">Ingredients</div>
         <table class="ingr-table">${ingrHTML}</table>
 
         <div class="result-section-title">How to make it</div>
@@ -698,10 +815,15 @@ Nutrition values must be realistic. The dish must be something the native people
           <div class="result-section-title">Chef's tip</div>
           <div class="tip-box">${r.chef_tip}</div>` : ''}
 
-        <div class="result-section-title">Nutrition facts &mdash; per serving</div>
+        <div class="result-section-title">Nutrition &mdash; per serving</div>
         <div class="nutrition-grid">${nutritionItems}</div>
 
+        <button class="try-again-btn" onclick="generateRecipe()">Generate another recipe with the same ingredients</button>
+
       </div>`;
+
+    /* Scroll result into view on mobile */
+    document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 </script>
 
