@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Fridge to Feast — Turn your ingredients into a meal</title>
   <meta name="description" content="Add what you have in your fridge, pick a cuisine, and get a full recipe with nutrition facts instantly." />
+  <link rel="manifest" href="/manifest.json" />
+  <meta name="theme-color" content="#c0392b" />
 
   <!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
   <!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
@@ -441,6 +443,26 @@
       margin-top: 1rem;
     }
 
+    /* Dietary checkboxes */
+    .dietary-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dietary-option { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 14px; color: var(--text-primary); }
+    .dietary-option input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+    /* History section */
+    .history-section { margin-top: 1.5rem; }
+    .history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .history-title { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.09em; text-transform: uppercase; }
+    .history-list { display: flex; flex-direction: column; gap: 6px; }
+    .history-item { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; transition: background 0.15s; }
+    .history-item:hover { background: var(--bg-secondary); }
+    .history-item-name { font-size: 14px; font-weight: 500; color: var(--text-primary); }
+    .history-item-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .history-item-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+    /* Share button */
+    .share-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
+    .share-btn:hover { background: var(--bg-tertiary); }
+
     @media (max-width: 480px) {
       .input-row { flex-direction: column; }
       input[type="number"] { width: 100%; flex: auto; }
@@ -540,6 +562,18 @@
     </select>
   </div>
 
+  <!-- Step 3: Dietary Restrictions -->
+  <div class="card">
+    <div class="step-label">Step 3 — Dietary restrictions (optional)</div>
+    <div class="dietary-grid">
+      <label class="dietary-option"><input type="checkbox" id="diet-vegetarian" value="vegetarian" onchange="handleDietaryChange()" /> Vegetarian</label>
+      <label class="dietary-option"><input type="checkbox" id="diet-vegan" value="vegan" onchange="handleDietaryChange()" /> Vegan</label>
+      <label class="dietary-option"><input type="checkbox" id="diet-gluten-free" value="gluten-free" onchange="handleDietaryChange()" /> No Gluten</label>
+      <label class="dietary-option"><input type="checkbox" id="diet-dairy-free" value="dairy-free" onchange="handleDietaryChange()" /> No Dairy</label>
+      <label class="dietary-option"><input type="checkbox" id="diet-nut-free" value="nut-free" onchange="handleDietaryChange()" /> No Nuts</label>
+    </div>
+  </div>
+
   <!-- Generate Button -->
   <button class="generate-btn" id="gen-btn" onclick="generateRecipe()">
     Find My Recipe
@@ -562,11 +596,29 @@
   <!-- Result Area -->
   <div id="result-area"></div>
 
+  <!-- History -->
+  <div id="history-area"></div>
+
 </div>
 
 <script>
   /* ── State ── */
   const ingredients = [];
+  let currentRecipe = null;
+
+  /* ── Dietary Filters ── */
+  function handleDietaryChange() {
+    const veganEl = document.getElementById('diet-vegan');
+    const vegEl   = document.getElementById('diet-vegetarian');
+    if (veganEl.checked) { vegEl.checked = true; vegEl.disabled = true; }
+    else { vegEl.disabled = false; }
+  }
+
+  function getSelectedDietary() {
+    return ['diet-vegetarian','diet-vegan','diet-gluten-free','diet-dairy-free','diet-nut-free']
+      .filter(id => document.getElementById(id)?.checked)
+      .map(id => document.getElementById(id).value);
+  }
 
   /* ── Add Ingredient ── */
   function addIngredient() {
@@ -655,103 +707,11 @@
         <div class="loading-text">${loadingMsg}</div>
       </div>`;
 
-    const ingredientList = ingredients
-      .map(i => `${i.name}${i.qty ? ` (${i.qty} ${i.unit})` : ''}`)
-      .join(', ');
-
-    const regionGuide = {
-      "Andhra Pradesh / Telugu": "Andhra food is known for being very spicy and hot. Common dishes are pesarattu (green moong crepe), gongura pachadi (sorrel chutney), pulihora (tamarind rice), gutti vankaya (stuffed brinjal curry), and pappu (dal). Andhra cooking uses a lot of red chili, tamarind, and mustard seeds. The taste is bold, tangy, and fiery.",
-      "Assam / Assamese": "Assamese food is light, simple, and mildly spiced. Common dishes are masor tenga (sour fish curry), khar (alkaline curry), aloo pitika (mashed potato with mustard oil), and panta bhat (fermented rice). Mustard oil, fermented ingredients, and light spices are key. The taste is mild, earthy, and sour.",
-      "Bengal / Bengali": "Bengali food loves mustard oil, mustard paste, and fish. Common dishes are macher jhol (light fish curry), aloo posto (potato with poppy seeds), shorshe ilish (hilsa in mustard gravy), cholar dal (chana dal), and mishti doi (sweet curd). The taste is delicate, slightly sweet, and uses panch phoron (5-spice mix).",
-      "Bihar / Bihari": "Bihari food is simple and wholesome. Common dishes are litti chokha (baked wheat balls with roasted brinjal mash), sattu paratha, dal puri, chana ghugni, and kadhi. Bihari cooking uses mustard oil, sattu (roasted gram flour), and simple spices. The taste is earthy and filling.",
-      "Goa / Goan": "Goan food is coastal and uses coconut, tamarind, and vinegar. Common dishes are fish curry rice, prawn balchao, chicken cafreal, pork vindaloo, and xacuti. Kokum, coconut milk, and red chilies are key. The taste is tangy, coconut-rich, and mildly spicy.",
-      "Gujarat / Gujarati": "Gujarati food is mostly vegetarian, mildly sweet, and balances sweet-salty-sour in every dish. Common dishes are dhokla, thepla, undhiyu, dal dhokli, and kadhi. Jaggery and lemon are added to many dishes. The taste is light, slightly sweet, and comforting.",
-      "Hyderabad / Hyderabadi": "Hyderabadi food is rich, aromatic, and Mughal-influenced. Famous dishes are Hyderabadi biryani, haleem, mirchi ka salan, bagara baingan, and double ka meetha. Fried onions, whole spices, and slow dum cooking are key. The taste is rich, meaty, and deeply spiced.",
-      "Karnataka / Kannadiga": "Karnataka food uses rice, ragi, and coconut heavily. Common dishes are bisi bele bath (rice-lentil-vegetable dish), jolada rotti (jowar flatbread), vangi bath, akki rotti, and saaru (rasam). The taste is mild to medium spicy with coconut and tamarind flavors.",
-      "Kashmir / Kashmiri": "Kashmiri food is rich and warming, using Kashmiri red chili (gives color but not too much heat), fennel, and dry ginger. Common dishes are rogan josh, yakhni (curd-based lamb), dum aloo, methi chaman, and kahwa. No onion or garlic in many Kashmiri Pandit dishes. The taste is aromatic and warming.",
-      "Kerala / Keralite": "Kerala food is coconut-heavy and uses coconut oil, coconut milk, and curry leaves. Common dishes are fish molee, appam with stew, puttu with kadala curry, avial (mixed vegetable coconut dish), and sambar. The taste is mildly spiced, coconut-forward, and fresh.",
-      "Madhya Pradesh / Malwi": "MP food is rustic and wheat-based. Common dishes are dal baati churma, bhutte ki kees (spiced corn), poha, chakki ki shak, and bhopali gosht korma. Ghee is used generously. The taste is hearty, wholesome, and mildly spiced.",
-      "Maharashtra / Maharashtrian": "Maharashtrian food uses peanuts, sesame, and kokum. Common dishes are varan bhaat (simple dal rice), misal pav, thalipeeth (multigrain flatbread), puran poli, and bharli vangi (stuffed brinjal). The taste ranges from mild coastal to spicy Kolhapuri.",
-      "Odisha / Odia": "Odia food is simple, lightly spiced, and temple-style. Common dishes are dalma (dal with vegetables), pakhala bhata (fermented rice), santula (boiled vegetables), machha jhola (fish curry), and rasabali (sweet). Minimal oil and spices are used. The taste is clean, simple, and wholesome.",
-      "Punjab / Punjabi": "Punjabi food is rich, hearty, and uses lots of ghee, butter, and cream. Famous dishes are dal makhani, butter chicken, sarson da saag with makki di roti, rajma chawal, and chole bhature. The taste is bold, rich, and deeply satisfying.",
-      "Rajasthan / Rajasthani": "Rajasthani food is very spicy, dried, and long-lasting (desert cooking). Common dishes are dal baati churma, gatte ki sabzi (gram flour dumplings in curd gravy), ker sangri, laal maas (red spicy mutton), and bajre ki roti with lasun chutney. The taste is very spicy, tangy, and bold.",
-      "Tamil Nadu / Tamil": "Tamil food uses rice, tamarind, and a lot of curry leaves and mustard seeds. Common dishes are sambar, rasam, curd rice, pongal (rice-lentil porridge), kootu (vegetable-lentil dish), and idli-dosa. Sesame oil and tamarind are key. The taste is tangy, mildly spicy, and aromatic.",
-      "Telangana": "Telangana food is earthier than Andhra. Common dishes are sajja roti (pearl millet bread), sarva pindi (rice flour pancake), gongura chicken, pesarattu, and jonna roti. Red chili and tamarind are used heavily. The taste is bold, spicy, and rustic.",
-      "Uttar Pradesh / Awadhi": "Awadhi food from UP is refined and aromatic, developed in royal kitchens. Famous dishes are biryani (dum-style), nihari, kebabs (galouti, seekh), korma, and dal tadka. Slow cooking and whole spices are key. The taste is rich, mildly spiced, and fragrant.",
-      "Uttarakhand / Pahari": "Pahari food is simple and nourishing. Common dishes are aloo ke gutke (spiced potatoes), kafuli (spinach-fenugreek curry), chainsoo (black dal), bhang ki chutney, and bal mithai. Minimal oil is used. The taste is simple, earthy, and wholesome.",
-      "Chinese": "Authentic Chinese home cooking uses soy sauce, sesame oil, ginger, garlic, and rice wine. Common dishes are egg fried rice, mapo tofu, kung pao chicken, stir-fried vegetables, and congee. The taste is umami-rich, savory, and balanced.",
-      "French": "French home cooking uses butter, cream, and fresh herbs like thyme and bay leaf. Common dishes are ratatouille, French omelette, soupe a l oignon, quiche, and poulet roti. The taste is buttery, rich, and herb-forward.",
-      "Greek": "Greek food uses olive oil, lemon, garlic, and oregano heavily. Common dishes are moussaka, spanakopita, Greek salad, fasolada (bean soup), and souvlaki. The taste is fresh, lemony, and Mediterranean.",
-      "Italian": "Italian home cooking is simple and lets ingredients shine. Common dishes are pasta aglio e olio, risotto, pizza margherita, minestrone soup, and bruschetta. Good olive oil, garlic, and tomatoes are the base. The taste is fresh, clean, and comforting.",
-      "Japanese": "Japanese home cooking is simple, clean, and umami-rich. Common dishes are miso soup, tamago gohan (egg rice), oyakodon (chicken-egg rice bowl), nikujaga (meat-potato stew), and yakimeshi (fried rice). Soy sauce, mirin, and dashi are key. The taste is delicate, savory, and balanced.",
-      "Lebanese / Middle Eastern": "Lebanese food uses olive oil, lemon, garlic, cumin, and fresh herbs. Common dishes are hummus, tabbouleh, fattoush, lentil soup, and shawarma. The taste is fresh, tangy, and herb-forward.",
-      "Mexican": "Mexican home cooking uses cumin, chili, lime, garlic, and tomatoes. Common dishes are tacos, frijoles (beans), arroz rojo (red rice), quesadillas, and guacamole. The taste is bold, smoky, and tangy.",
-      "Thai": "Thai food balances sweet, sour, salty, and spicy in every dish. Common dishes are pad Thai, khao pad (fried rice), tom kha (coconut soup), som tam (green papaya salad), and green curry. Fish sauce, lime, and chili are key. The taste is vibrant and balanced.",
-      "Turkish": "Turkish home cooking uses yogurt, tomatoes, eggplant, and olive oil. Common dishes are menemen (scrambled eggs with tomatoes), mercimek corbasi (lentil soup), imam bayildi (stuffed eggplant), pilaf, and kofte. The taste is savory, mild, and comforting.",
-      "American": "American home cooking is hearty and comforting. Common dishes are mac and cheese, grilled cheese sandwich, chicken soup, meatloaf, mashed potatoes, and pancakes. Butter, cheese, and simple seasonings are key. The taste is rich, filling, and comforting."
-    };
-
-    let authGuide, cuisineInstruction;
-    if (region === 'Surprise Me') {
-      authGuide = '';
-      cuisineInstruction = `Pick the BEST cuisine and dish that works perfectly with the user's ingredients. Choose any cuisine from the world — Indian, Chinese, Italian, Mexican, Thai, Middle Eastern, American, etc. Pick whatever dish would taste best and be simplest to make with these exact ingredients.`;
-    } else {
-      authGuide = regionGuide[region] || '';
-      cuisineInstruction = `Make a dish from ${region} cuisine. ${authGuide ? `\n\nABOUT THIS CUISINE:\n${authGuide}` : ''}`;
-    }
-
-    const prompt = `You are a home cooking expert who knows recipes from every part of the world.
-
-The user has these ingredients: ${ingredientList}.
-${cuisineInstruction}
-
-STRICT RULES — follow every single one:
-
-RULE 1 — REALISTIC DISH: Only suggest a dish that people actually cook and eat at home. The dish must be genuinely cookable with the listed ingredients plus basic pantry staples.
-
-RULE 2 — SIMPLE COMMON INGREDIENTS ONLY: Only use ingredients found in a normal home kitchen — salt, oil, onion, garlic, ginger, tomato, green chili, red chili powder, turmeric, cumin, coriander powder, mustard seeds, curry leaves, ghee, butter, milk, rice, flour, sugar, jaggery, tamarind, lemon, yogurt, water. Do NOT add rare or hard-to-find items.
-
-RULE 3 — SIMPLE ENGLISH ONLY: Write every step in short, easy sentences. Use the simplest words possible.
-BAD: "Saute the aromatics until translucent and deglaze with stock."
-GOOD: "Cook the onion in oil for 3 minutes until soft and light brown."
-Anyone with basic English must be able to follow each step.
-
-RULE 4 — SHORT STEPS: Each step = 1 to 2 sentences only. No long paragraphs.
-
-RULE 5 — USE THE USER'S INGREDIENTS: Build the recipe around what the user already has. Only add very basic pantry items if truly needed.
-
-Respond ONLY with a valid JSON object — no markdown, no extra text:
-{
-  "recipe_name": "Actual name of the dish",
-  "cuisine": "Name of the cuisine / region",
-  "servings": 2,
-  "prep_time": "10 mins",
-  "cook_time": "20 mins",
-  "ingredients_used": [
-    {"name": "ingredient name", "amount": "quantity with unit"}
-  ],
-  "steps": [
-    "Step written in simple English",
-    "Next step in simple English"
-  ],
-  "chef_tip": "One short practical tip",
-  "nutrition_per_serving": {
-    "calories": 350,
-    "protein_g": 18,
-    "carbs_g": 42,
-    "fat_g": 12,
-    "fiber_g": 5,
-    "sodium_mg": 480
-  }
-}
-
-Nutrition values must be realistic.`;
-
     try {
       const response = await fetch("/api/recipe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt })
+        body: JSON.stringify({ ingredients, region, dietary: getSelectedDietary() })
       });
 
       const data = await response.json();
@@ -766,6 +726,7 @@ Nutrition values must be realistic.`;
       }
 
       renderResult(recipe);
+      saveToHistory(recipe);
     } catch (err) {
       resultArea.innerHTML = `
         <div class="error-msg">
@@ -780,6 +741,7 @@ Nutrition values must be realistic.`;
 
   /* ── Render Result ── */
   function renderResult(r) {
+    currentRecipe = r;
     const n = r.nutrition_per_serving || {};
 
     const metaParts = [r.cuisine, `${r.servings} servings`, `Prep: ${r.prep_time}`, `Cook: ${r.cook_time}`];
@@ -824,6 +786,7 @@ Nutrition values must be realistic.`;
         <div class="result-section-title">Nutrition &mdash; per serving</div>
         <div class="nutrition-grid">${nutritionItems}</div>
 
+        <button class="share-btn" id="share-btn" onclick="shareRecipe()">Share / Copy Recipe</button>
         <button class="try-again-btn" onclick="generateRecipe()">Generate another recipe with the same ingredients</button>
 
       </div>`;
@@ -831,6 +794,90 @@ Nutrition values must be realistic.`;
     /* Scroll result into view on mobile */
     document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
+
+  /* ── Recipe History ── */
+  const HISTORY_KEY = 'ftf_history';
+  const MAX_HISTORY = 10;
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function saveToHistory(recipe) {
+    const history = getHistory();
+    history.unshift({ id: Date.now(), recipe_name: recipe.recipe_name, cuisine: recipe.cuisine, timestamp: Date.now(), recipe });
+    if (history.length > MAX_HISTORY) history.length = MAX_HISTORY;
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(history)); } catch (_) {}
+    renderHistory();
+  }
+
+  function getHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch (_) { return []; }
+  }
+
+  function clearHistory() { localStorage.removeItem(HISTORY_KEY); renderHistory(); }
+
+  function relativeTime(ts) {
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return `${mins} min${mins > 1 ? 's' : ''} ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs} hr${hrs > 1 ? 's' : ''} ago`;
+    const days = Math.floor(hrs / 24);
+    return `${days} day${days > 1 ? 's' : ''} ago`;
+  }
+
+  function renderHistory() {
+    const history = getHistory();
+    const area = document.getElementById('history-area');
+    if (!history.length) { area.innerHTML = ''; return; }
+    area.innerHTML = `
+      <div class="history-section">
+        <div class="history-header">
+          <div class="history-title">Recent Recipes</div>
+          <button class="clear-btn" onclick="clearHistory()">Clear history</button>
+        </div>
+        <div class="history-list">
+          ${history.map(item => `
+            <div class="history-item" onclick="loadHistoryItem(${item.id})">
+              <div>
+                <div class="history-item-name">${escapeHtml(item.recipe_name)}</div>
+                <div class="history-item-meta">${escapeHtml(item.cuisine)}</div>
+              </div>
+              <div class="history-item-time">${relativeTime(item.timestamp)}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function loadHistoryItem(id) {
+    const item = getHistory().find(h => h.id === id);
+    if (item) { renderResult(item.recipe); document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
+  /* ── Share / Copy ── */
+  function buildShareText(r) {
+    const ingr  = (r.ingredients_used || []).map(i => `  - ${i.name}: ${i.amount}`).join('\n');
+    const steps = (r.steps || []).map((s, i) => `  ${i + 1}. ${s}`).join('\n');
+    return `${r.recipe_name} (${r.cuisine})\n\nIngredients:\n${ingr}\n\nSteps:\n${steps}${r.chef_tip ? `\n\nTip: ${r.chef_tip}` : ''}\n\nMade with Fridge to Feast`;
+  }
+
+  async function shareRecipe() {
+    if (!currentRecipe) return;
+    const text = buildShareText(currentRecipe);
+    const btn  = document.getElementById('share-btn');
+    if (navigator.share) {
+      try { await navigator.share({ title: currentRecipe.recipe_name, text }); return; } catch (_) {}
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Share / Copy Recipe'; }, 2000); }
+    } catch (_) { alert('Could not copy. Please copy the recipe manually.'); }
+  }
+
+  /* ── Init ── */
+  renderHistory();
 </script>
 
 </body>

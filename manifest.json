@@ -1,0 +1,17 @@
+{
+  "name": "Fridge to Feast",
+  "short_name": "FridgeToFeast",
+  "description": "Turn your fridge ingredients into a real recipe instantly.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffe5e5",
+  "theme_color": "#c0392b",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
