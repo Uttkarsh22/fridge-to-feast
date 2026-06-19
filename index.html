@@ -757,13 +757,19 @@ Nutrition values must be realistic.`;
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Server error');
       const cleanText = (data.text || '').replace(/```json|```/g, '').trim();
-      const recipe = JSON.parse(cleanText);
+
+      let recipe;
+      try {
+        recipe = JSON.parse(cleanText);
+      } catch (_) {
+        throw new Error('The recipe response was incomplete. Please try again.');
+      }
 
       renderResult(recipe);
     } catch (err) {
       resultArea.innerHTML = `
         <div class="error-msg">
-          Something went wrong generating your recipe. Please try again.<br>
+          Something went wrong. Please try again.<br>
           <small style="opacity:0.55; margin-top:4px; display:block;">${err.message}</small>
         </div>`;
     } finally {
