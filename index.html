@@ -459,6 +459,14 @@
     .history-item-meta { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
     .history-item-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
 
+    /* Speak / TTS */
+    .speak-bar { display: flex; gap: 6px; margin-top: 1.25rem; }
+    .speak-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); transition: opacity 0.15s; }
+    .speak-btn:hover { opacity: 0.88; }
+    .speak-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .speak-ctrl { padding: 11px 14px; font-size: 16px; cursor: pointer; background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; }
+    .speak-ctrl:hover { background: var(--bg-tertiary); }
+
     /* Share button */
     .share-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
     .share-btn:hover { background: var(--bg-tertiary); }
@@ -863,6 +871,8 @@
 
   /* ── Render Result ── */
   function renderResult(r) {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    isSpeaking = false; isPaused = false;
     currentRecipe = r;
     const n = r.nutrition_per_serving || {};
 
@@ -907,6 +917,14 @@
 
         <div class="result-section-title">Nutrition &mdash; per serving</div>
         <div class="nutrition-grid">${nutritionItems}</div>
+
+        <div class="speak-bar">
+          <button class="speak-btn" id="speak-btn" onclick="toggleSpeak()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            Listen to Recipe
+          </button>
+          <button class="speak-ctrl" id="speak-stop" onclick="stopSpeak()" title="Stop" style="display:none;">⏹</button>
+        </div>
 
         <div class="result-section-title" style="margin-top:1.25rem;">Watch on YouTube</div>
         <a class="yt-link" href="https://www.youtube.com/results?search_query=${encodeURIComponent(r.recipe_name + ' recipe')}" target="_blank" rel="noopener noreferrer">
@@ -1005,6 +1023,75 @@
       await navigator.clipboard.writeText(text);
       if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Share / Copy Recipe'; }, 2000); }
     } catch (_) { alert('Could not copy. Please copy the recipe manually.'); }
+  }
+
+  /* ── Text-to-Speech ── */
+  let isSpeaking = false;
+  let isPaused   = false;
+
+  function buildSpeechText(r) {
+    const ingr  = (r.ingredients_used || []).map(i => `${i.name}, ${i.amount}`).join('. ');
+    const steps = (r.steps || []).map((s, i) => `Step ${i + 1}. ${s}`).join('. ');
+    return [
+      `${r.recipe_name}.`,
+      `${r.cuisine} cuisine.`,
+      `Serves ${r.servings}. Prep time ${r.prep_time}. Cook time ${r.cook_time}.`,
+      `Ingredients. ${ingr}.`,
+      `How to make it. ${steps}.`,
+      r.chef_tip ? `Chef tip. ${r.chef_tip}.` : '',
+    ].filter(Boolean).join(' ');
+  }
+
+  function toggleSpeak() {
+    if (!window.speechSynthesis) {
+      alert('Text-to-speech is not supported in your browser.');
+      return;
+    }
+    if (isSpeaking && !isPaused) {
+      window.speechSynthesis.pause();
+      isPaused = true;
+      updateSpeakUI();
+      return;
+    }
+    if (isSpeaking && isPaused) {
+      window.speechSynthesis.resume();
+      isPaused = false;
+      updateSpeakUI();
+      return;
+    }
+    if (!currentRecipe) return;
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(buildSpeechText(currentRecipe));
+    utt.rate  = 0.92;
+    utt.pitch = 1;
+    utt.lang  = 'en-US';
+    utt.onstart = () => { isSpeaking = true; isPaused = false; updateSpeakUI(); };
+    utt.onend   = () => { isSpeaking = false; isPaused = false; updateSpeakUI(); };
+    utt.onerror = () => { isSpeaking = false; isPaused = false; updateSpeakUI(); };
+    window.speechSynthesis.speak(utt);
+  }
+
+  function stopSpeak() {
+    window.speechSynthesis.cancel();
+    isSpeaking = false;
+    isPaused   = false;
+    updateSpeakUI();
+  }
+
+  function updateSpeakUI() {
+    const btn  = document.getElementById('speak-btn');
+    const stop = document.getElementById('speak-stop');
+    if (!btn) return;
+    if (!isSpeaking) {
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg> Listen to Recipe`;
+      if (stop) stop.style.display = 'none';
+    } else if (isPaused) {
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Resume`;
+      if (stop) stop.style.display = '';
+    } else {
+      btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Pause`;
+      if (stop) stop.style.display = '';
+    }
   }
 
   /* ── Collections ── */
