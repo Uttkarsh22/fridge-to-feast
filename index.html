@@ -6,6 +6,7 @@
   <title>Fridge to Feast — Turn your ingredients into a meal</title>
   <meta name="description" content="Add what you have in your fridge, pick a cuisine, and get a full recipe with nutrition facts instantly." />
   <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon.svg" type="image/svg+xml" />
   <meta name="theme-color" content="#c0392b" />
 
   <!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
@@ -44,6 +45,19 @@
     /* Header */
     .app-header {
       margin-bottom: 1rem;
+    }
+
+    .app-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .app-logo {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+      border-radius: 8px;
     }
 
     .app-title {
@@ -130,6 +144,7 @@
     input[type="text"] { flex: 1; min-width: 140px; }
     input[type="number"] { width: 80px; flex: 0 0 80px; }
     select.unit-select { width: 100px; flex: 0 0 100px; }
+    .qty-unit-group { display: flex; gap: 8px; align-items: stretch; }
     select.region-select { width: 100%; }
 
     .add-btn {
@@ -303,12 +318,22 @@
     }
 
     .recipe-meta {
-      font-size: 13px;
-      color: var(--text-secondary);
       margin-bottom: 1.25rem;
       display: flex;
       flex-wrap: wrap;
-      gap: 4px 12px;
+      gap: 6px;
+    }
+
+    .recipe-meta-badge {
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      background: var(--bg-secondary);
+      border: 0.5px solid var(--border-medium);
+      border-radius: 20px;
+      padding: 3px 10px;
     }
 
     .result-section-title {
@@ -385,7 +410,7 @@
     /* Nutrition grid */
     .nutrition-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 8px;
     }
 
@@ -413,24 +438,26 @@
       font-weight: 400;
     }
 
-    /* Try again button */
+    /* Try again button — ghost/tertiary */
     .try-again-btn {
       display: block;
       width: 100%;
-      margin-top: 1.25rem;
-      padding: 10px;
-      font-size: 14px;
-      font-weight: 500;
+      margin-top: 1rem;
+      padding: 8px;
+      font-size: 13px;
+      font-weight: 400;
       cursor: pointer;
-      background: var(--bg-secondary);
-      color: var(--text-secondary);
-      border: 0.5px solid var(--border-medium);
+      background: none;
+      color: var(--text-tertiary);
+      border: none;
       border-radius: var(--radius-md);
-      transition: background 0.15s;
+      transition: color 0.15s;
       text-align: center;
+      text-decoration: underline;
+      text-underline-offset: 2px;
     }
 
-    .try-again-btn:hover { background: var(--bg-tertiary); }
+    .try-again-btn:hover { color: var(--text-secondary); }
 
     /* Error */
     .error-msg {
@@ -467,18 +494,18 @@
     .speak-ctrl { padding: 11px 14px; font-size: 16px; cursor: pointer; background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; }
     .speak-ctrl:hover { background: var(--bg-tertiary); }
 
-    /* Share button */
-    .share-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
-    .share-btn:hover { background: var(--bg-tertiary); }
+    /* Share button — secondary outlined */
+    .share-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
+    .share-btn:hover { background: var(--bg-secondary); }
 
-    /* YouTube link */
-    .yt-link { display: flex; align-items: center; gap: 8px; margin-top: 0; padding: 10px 14px; background: #fff5f5; border: 0.5px solid rgba(192,0,0,0.2); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--accent); text-decoration: none; transition: background 0.15s; }
-    .yt-link:hover { background: #ffe8e8; }
+    /* YouTube link — secondary outlined */
+    .yt-link { display: flex; align-items: center; gap: 8px; margin-top: 0.75rem; padding: 10px 14px; background: transparent; border: 1px solid var(--accent); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--accent); text-decoration: none; transition: background 0.15s; }
+    .yt-link:hover { background: #fff0f0; }
     .yt-link svg { flex-shrink: 0; }
 
-    /* Save to collection */
-    .save-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
-    .save-btn:hover { background: var(--bg-tertiary); }
+    /* Save to collection — secondary outlined */
+    .save-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
+    .save-btn:hover { background: var(--bg-secondary); }
     .save-panel { margin-top: 8px; background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); overflow: hidden; }
     .save-panel-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; cursor: pointer; font-size: 14px; color: var(--text-primary); border-bottom: 0.5px solid var(--border-light); transition: background 0.15s; }
     .save-panel-item:hover { background: var(--bg-tertiary); }
@@ -512,9 +539,12 @@
     .collection-recipe-remove:hover { color: var(--accent); }
 
     @media (max-width: 480px) {
-      .input-row { flex-direction: column; }
-      input[type="number"] { width: 100%; flex: auto; }
-      select.unit-select { width: 100%; flex: auto; }
+      .input-row { flex-wrap: wrap; }
+      input[type="text"] { flex: 1 1 100%; }
+      .qty-unit-group { display: flex; gap: 8px; flex: 1 1 auto; }
+      .qty-unit-group input[type="number"] { width: 80px; flex: 0 0 80px; }
+      .qty-unit-group select.unit-select { flex: 1; width: auto; }
+      .add-btn { flex: 1 1 100%; }
     }
   </style>
 </head>
@@ -524,7 +554,10 @@
 
   <!-- Header -->
   <div class="app-header">
-    <div class="app-title">Fridge to Feast</div>
+    <div class="app-title-row">
+      <img src="/icon.svg" alt="" class="app-logo" />
+      <div class="app-title">Fridge to Feast</div>
+    </div>
     <div class="app-subtitle">Add whatever you have — even just 2 ingredients — and get a real recipe in seconds.</div>
   </div>
 
@@ -547,17 +580,19 @@
     <div class="step-label">Step 1 — What's in your fridge?</div>
     <div class="input-row">
       <input type="text" id="ingr-name" placeholder="e.g. Tomato, Eggs, Paneer, Chicken…" list="ingr-suggestions" autocomplete="off" />
-      <input type="number" id="ingr-qty" placeholder="Qty" min="1" />
-      <select class="unit-select" id="ingr-unit">
-        <option value="g">grams</option>
-        <option value="kg">kg</option>
-        <option value="ml">ml</option>
-        <option value="L">liters</option>
-        <option value="pcs">pieces</option>
-        <option value="cups">cups</option>
-        <option value="tbsp">tbsp</option>
-        <option value="tsp">tsp</option>
-      </select>
+      <div class="qty-unit-group">
+        <input type="number" id="ingr-qty" placeholder="Qty" min="1" />
+        <select class="unit-select" id="ingr-unit">
+          <option value="g">grams</option>
+          <option value="kg">kg</option>
+          <option value="ml">ml</option>
+          <option value="L">liters</option>
+          <option value="pcs">pieces</option>
+          <option value="cups">cups</option>
+          <option value="tbsp">tbsp</option>
+          <option value="tsp">tsp</option>
+        </select>
+      </div>
       <button class="add-btn" onclick="addIngredient()">+ Add</button>
     </div>
     <datalist id="ingr-suggestions">
@@ -876,7 +911,7 @@
     currentRecipe = r;
     const n = r.nutrition_per_serving || {};
 
-    const metaParts = [r.cuisine, `${r.servings} servings`, `Prep: ${r.prep_time}`, `Cook: ${r.cook_time}`];
+    const metaParts = [r.cuisine, `${r.servings} servings`, `Prep ${r.prep_time}`, `Cook ${r.cook_time}`];
 
     const stepsHTML = (r.steps || [])
       .map(s => `<li><span>${s}</span></li>`)
@@ -903,7 +938,7 @@
       <div class="result-card">
 
         <div class="recipe-name">${r.recipe_name}</div>
-        <div class="recipe-meta">${metaParts.join(' &nbsp;·&nbsp; ')}</div>
+        <div class="recipe-meta">${metaParts.map(p => `<span class="recipe-meta-badge">${escapeHtml(String(p))}</span>`).join('')}</div>
 
         <div class="result-section-title">Ingredients</div>
         <table class="ingr-table">${ingrHTML}</table>
@@ -926,7 +961,6 @@
           <button class="speak-ctrl" id="speak-stop" onclick="stopSpeak()" title="Stop" style="display:none;">⏹</button>
         </div>
 
-        <div class="result-section-title" style="margin-top:1.25rem;">Watch on YouTube</div>
         <a class="yt-link" href="https://www.youtube.com/results?search_query=${encodeURIComponent(r.recipe_name + ' recipe')}" target="_blank" rel="noopener noreferrer">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="#c0392b"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
           Watch how to make ${escapeHtml(r.recipe_name)}
