@@ -463,6 +463,46 @@
     .share-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
     .share-btn:hover { background: var(--bg-tertiary); }
 
+    /* YouTube link */
+    .yt-link { display: flex; align-items: center; gap: 8px; margin-top: 0; padding: 10px 14px; background: #fff5f5; border: 0.5px solid rgba(192,0,0,0.2); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--accent); text-decoration: none; transition: background 0.15s; }
+    .yt-link:hover { background: #ffe8e8; }
+    .yt-link svg { flex-shrink: 0; }
+
+    /* Save to collection */
+    .save-btn { display: block; width: 100%; margin-top: 0.75rem; padding: 10px; font-size: 14px; font-weight: 500; cursor: pointer; background: var(--bg-secondary); color: var(--text-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); transition: background 0.15s; text-align: center; }
+    .save-btn:hover { background: var(--bg-tertiary); }
+    .save-panel { margin-top: 8px; background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); overflow: hidden; }
+    .save-panel-item { display: flex; justify-content: space-between; align-items: center; padding: 9px 14px; cursor: pointer; font-size: 14px; color: var(--text-primary); border-bottom: 0.5px solid var(--border-light); transition: background 0.15s; }
+    .save-panel-item:hover { background: var(--bg-tertiary); }
+    .save-panel-count { font-size: 12px; color: var(--text-tertiary); }
+    .save-panel-empty { padding: 10px 14px; font-size: 13px; color: var(--text-tertiary); font-style: italic; }
+    .save-panel-new { display: flex; gap: 6px; padding: 10px; border-top: 0.5px solid var(--border-light); }
+    .save-panel-new input { flex: 1; font-size: 13px; padding: 7px 10px; background: var(--bg-primary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); color: var(--text-primary); outline: none; }
+    .save-panel-new input:focus { border-color: var(--accent); }
+    .save-panel-new button { padding: 7px 12px; font-size: 13px; font-weight: 500; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); cursor: pointer; white-space: nowrap; }
+
+    /* Collections section */
+    .collections-section { margin-top: 1.5rem; }
+    .collections-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .collections-title { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.09em; text-transform: uppercase; }
+    .collection-card { background: var(--bg-primary); border: 0.5px solid var(--border-light); border-radius: var(--radius-md); margin-bottom: 6px; overflow: hidden; }
+    .collection-card-header { display: flex; align-items: center; gap: 8px; padding: 10px 14px; cursor: pointer; transition: background 0.15s; }
+    .collection-card-header:hover { background: var(--bg-secondary); }
+    .collection-chevron { font-size: 10px; color: var(--text-tertiary); transition: transform 0.15s; flex-shrink: 0; }
+    .collection-chevron.open { transform: rotate(90deg); }
+    .collection-name { font-size: 14px; font-weight: 500; color: var(--text-primary); flex: 1; }
+    .collection-count { font-size: 12px; color: var(--text-tertiary); }
+    .collection-del-btn { background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-tertiary); padding: 0; line-height: 1; transition: color 0.15s; }
+    .collection-del-btn:hover { color: var(--accent); }
+    .collection-recipes { border-top: 0.5px solid var(--border-light); }
+    .collection-recipe-item { display: flex; align-items: center; gap: 8px; padding: 8px 14px; border-bottom: 0.5px solid var(--border-light); }
+    .collection-recipe-item:last-child { border-bottom: none; }
+    .collection-recipe-info { flex: 1; cursor: pointer; }
+    .collection-recipe-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+    .collection-recipe-meta { font-size: 11px; color: var(--text-secondary); margin-top: 1px; }
+    .collection-recipe-remove { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-tertiary); padding: 0; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
+    .collection-recipe-remove:hover { color: var(--accent); }
+
     @media (max-width: 480px) {
       .input-row { flex-direction: column; }
       input[type="number"] { width: 100%; flex: auto; }
@@ -498,7 +538,7 @@
   <div class="card">
     <div class="step-label">Step 1 — What's in your fridge?</div>
     <div class="input-row">
-      <input type="text" id="ingr-name" placeholder="e.g. Tomato, Eggs, Paneer, Chicken…" />
+      <input type="text" id="ingr-name" placeholder="e.g. Tomato, Eggs, Paneer, Chicken…" list="ingr-suggestions" autocomplete="off" />
       <input type="number" id="ingr-qty" placeholder="Qty" min="1" />
       <select class="unit-select" id="ingr-unit">
         <option value="g">grams</option>
@@ -512,6 +552,85 @@
       </select>
       <button class="add-btn" onclick="addIngredient()">+ Add</button>
     </div>
+    <datalist id="ingr-suggestions">
+      <option value="Egg">
+      <option value="Tomato">
+      <option value="Onion">
+      <option value="Potato">
+      <option value="Garlic">
+      <option value="Ginger">
+      <option value="Milk">
+      <option value="Butter">
+      <option value="Cheese">
+      <option value="Bread">
+      <option value="Rice">
+      <option value="Pasta">
+      <option value="Flour">
+      <option value="Sugar">
+      <option value="Salt">
+      <option value="Oil">
+      <option value="Lemon">
+      <option value="Lime">
+      <option value="Carrot">
+      <option value="Capsicum (Bell Pepper)">
+      <option value="Spinach">
+      <option value="Cauliflower">
+      <option value="Cabbage">
+      <option value="Peas">
+      <option value="Corn">
+      <option value="Mushroom">
+      <option value="Broccoli">
+      <option value="Zucchini">
+      <option value="Celery">
+      <option value="Green Chili">
+      <option value="Coriander Leaves">
+      <option value="Curry Leaves">
+      <option value="Paneer">
+      <option value="Chicken">
+      <option value="Mutton">
+      <option value="Fish">
+      <option value="Prawns">
+      <option value="Tofu">
+      <option value="Curd (Yogurt)">
+      <option value="Cream">
+      <option value="Coconut Milk">
+      <option value="Ghee">
+      <option value="Olive Oil">
+      <option value="Soy Sauce">
+      <option value="Vinegar">
+      <option value="Tamarind">
+      <option value="Jaggery">
+      <option value="Turmeric">
+      <option value="Cumin">
+      <option value="Coriander Powder">
+      <option value="Red Chili Powder">
+      <option value="Garam Masala">
+      <option value="Mustard Seeds">
+      <option value="Black Pepper">
+      <option value="Cardamom">
+      <option value="Cinnamon">
+      <option value="Cloves">
+      <option value="Bay Leaf">
+      <option value="Atta (Wheat Flour)">
+      <option value="Besan (Gram Flour)">
+      <option value="Basmati Rice">
+      <option value="Chana Dal">
+      <option value="Moong Dal">
+      <option value="Urad Dal">
+      <option value="Rajma (Kidney Beans)">
+      <option value="Chickpeas">
+      <option value="Okra (Bhindi)">
+      <option value="Brinjal (Eggplant)">
+      <option value="Pumpkin">
+      <option value="Sweet Potato">
+      <option value="Beetroot">
+      <option value="Noodles">
+      <option value="Oats">
+      <option value="Banana">
+      <option value="Apple">
+      <option value="Mango">
+      <option value="Coconut">
+    </datalist>
     <div class="chips-header" id="chips-header" style="display:none;">
       <span class="chips-count" id="chips-count"></span>
       <button class="clear-btn" onclick="clearAll()">Clear all</button>
@@ -598,6 +717,9 @@
 
   <!-- History -->
   <div id="history-area"></div>
+
+  <!-- Collections -->
+  <div id="collections-area"></div>
 
 </div>
 
@@ -786,6 +908,15 @@
         <div class="result-section-title">Nutrition &mdash; per serving</div>
         <div class="nutrition-grid">${nutritionItems}</div>
 
+        <div class="result-section-title" style="margin-top:1.25rem;">Watch on YouTube</div>
+        <a class="yt-link" href="https://www.youtube.com/results?search_query=${encodeURIComponent(r.recipe_name + ' recipe')}" target="_blank" rel="noopener noreferrer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="#c0392b"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.6A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.6 9.4.6 9.4.6s7.5 0 9.4-.6a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="white"/></svg>
+          Watch how to make ${escapeHtml(r.recipe_name)}
+        </a>
+
+        <button class="save-btn" onclick="toggleSavePanel()">Save to Collection</button>
+        <div id="save-panel" style="display:none;"></div>
+
         <button class="share-btn" id="share-btn" onclick="shareRecipe()">Share / Copy Recipe</button>
         <button class="try-again-btn" onclick="generateRecipe()">Generate another recipe with the same ingredients</button>
 
@@ -876,8 +1007,154 @@
     } catch (_) { alert('Could not copy. Please copy the recipe manually.'); }
   }
 
+  /* ── Collections ── */
+  const COLLECTIONS_KEY = 'ftf_collections';
+  const expandedCollections = new Set();
+
+  function getCollections() {
+    try { return JSON.parse(localStorage.getItem(COLLECTIONS_KEY) || '[]'); } catch (_) { return []; }
+  }
+
+  function saveCollections(cols) {
+    try { localStorage.setItem(COLLECTIONS_KEY, JSON.stringify(cols)); } catch (_) {}
+  }
+
+  function toggleSavePanel() {
+    const panel = document.getElementById('save-panel');
+    if (!panel) return;
+    if (panel.style.display === 'none') {
+      panel.style.display = 'block';
+      panel.innerHTML = buildSavePanel();
+    } else {
+      panel.style.display = 'none';
+    }
+  }
+
+  function buildSavePanel() {
+    const cols = getCollections();
+    const existingHTML = cols.length
+      ? cols.map(c => `
+          <div class="save-panel-item" onclick="saveToCollection(${c.id})">
+            <span>${escapeHtml(c.name)}</span>
+            <span class="save-panel-count">${c.recipes.length} recipe${c.recipes.length !== 1 ? 's' : ''}</span>
+          </div>`).join('')
+      : '<div class="save-panel-empty">No collections yet — create one below.</div>';
+    return `
+      <div class="save-panel">
+        ${existingHTML}
+        <div class="save-panel-new">
+          <input type="text" id="new-col-name" placeholder="New collection name…" onkeydown="if(event.key==='Enter')createCollectionAndSave()" />
+          <button onclick="createCollectionAndSave()">Create & Save</button>
+        </div>
+      </div>`;
+  }
+
+  function saveToCollection(colId) {
+    if (!currentRecipe) return;
+    const cols = getCollections();
+    const col = cols.find(c => c.id === colId);
+    if (!col) return;
+    const alreadySaved = col.recipes.some(r => r.recipe_name === currentRecipe.recipe_name && r.cuisine === currentRecipe.cuisine);
+    if (!alreadySaved) {
+      col.recipes.unshift({ savedId: Date.now(), savedAt: Date.now(), ...currentRecipe });
+    }
+    saveCollections(cols);
+    renderCollections();
+    const btn = document.querySelector('.save-btn');
+    if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => { btn.textContent = 'Save to Collection'; }, 1500); }
+    const panel = document.getElementById('save-panel');
+    if (panel) panel.style.display = 'none';
+  }
+
+  function createCollectionAndSave() {
+    if (!currentRecipe) return;
+    const input = document.getElementById('new-col-name');
+    const name = input ? input.value.trim() : '';
+    if (!name) { if (input) input.focus(); return; }
+    const cols = getCollections();
+    const newCol = { id: Date.now(), name, createdAt: Date.now(), recipes: [{ savedId: Date.now(), savedAt: Date.now(), ...currentRecipe }] };
+    cols.unshift(newCol);
+    saveCollections(cols);
+    expandedCollections.add(newCol.id);
+    renderCollections();
+    const btn = document.querySelector('.save-btn');
+    if (btn) { btn.textContent = '✓ Saved'; setTimeout(() => { btn.textContent = 'Save to Collection'; }, 1500); }
+    const panel = document.getElementById('save-panel');
+    if (panel) panel.style.display = 'none';
+  }
+
+  function removeFromCollection(colId, savedId) {
+    const cols = getCollections();
+    const col = cols.find(c => c.id === colId);
+    if (col) col.recipes = col.recipes.filter(r => r.savedId !== savedId);
+    saveCollections(cols);
+    renderCollections();
+  }
+
+  function deleteCollection(colId) {
+    const cols = getCollections().filter(c => c.id !== colId);
+    expandedCollections.delete(colId);
+    saveCollections(cols);
+    renderCollections();
+  }
+
+  function toggleCollectionExpand(colId) {
+    if (expandedCollections.has(colId)) expandedCollections.delete(colId);
+    else expandedCollections.add(colId);
+    renderCollections();
+  }
+
+  function renderCollections() {
+    const cols = getCollections();
+    const area = document.getElementById('collections-area');
+    if (!area) return;
+    if (!cols.length) { area.innerHTML = ''; return; }
+
+    const colsHTML = cols.map(col => {
+      const isOpen = expandedCollections.has(col.id);
+      const recipesHTML = isOpen && col.recipes.length
+        ? `<div class="collection-recipes">
+            ${col.recipes.map(r => `
+              <div class="collection-recipe-item">
+                <div class="collection-recipe-info" onclick="loadCollectionRecipe(${col.id}, ${r.savedId})">
+                  <div class="collection-recipe-name">${escapeHtml(r.recipe_name)}</div>
+                  <div class="collection-recipe-meta">${escapeHtml(r.cuisine)}</div>
+                </div>
+                <button class="collection-recipe-remove" onclick="removeFromCollection(${col.id}, ${r.savedId})" title="Remove">×</button>
+              </div>`).join('')}
+          </div>` : '';
+
+      return `
+        <div class="collection-card">
+          <div class="collection-card-header" onclick="toggleCollectionExpand(${col.id})">
+            <span class="collection-chevron ${isOpen ? 'open' : ''}">▶</span>
+            <span class="collection-name">${escapeHtml(col.name)}</span>
+            <span class="collection-count">${col.recipes.length} recipe${col.recipes.length !== 1 ? 's' : ''}</span>
+            <button class="collection-del-btn" onclick="event.stopPropagation(); deleteCollection(${col.id})" title="Delete collection">×</button>
+          </div>
+          ${recipesHTML}
+        </div>`;
+    }).join('');
+
+    area.innerHTML = `
+      <div class="collections-section">
+        <div class="collections-header">
+          <div class="collections-title">My Collections</div>
+        </div>
+        ${colsHTML}
+      </div>`;
+  }
+
+  function loadCollectionRecipe(colId, savedId) {
+    const col = getCollections().find(c => c.id === colId);
+    if (!col) return;
+    const item = col.recipes.find(r => r.savedId === savedId);
+    if (item) { renderResult(item); document.getElementById('result-area').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+
   /* ── Init ── */
   renderHistory();
+  renderCollections();
 </script>
 
 </body>
