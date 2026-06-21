@@ -568,29 +568,65 @@
     .collection-recipe-remove { background: none; border: none; cursor: pointer; font-size: 15px; color: var(--text-tertiary); padding: 0; line-height: 1; transition: color 0.15s; flex-shrink: 0; }
     .collection-recipe-remove:hover { color: var(--accent); }
 
-    /* Form accordion */
-    .form-section { transition: none; }
-    .form-section.collapsed { display: none; }
+    /* Form section — JS-driven height animation */
+    .form-section { overflow: hidden; }
 
+    /* Accordion summary bar */
     .form-accordion {
       display: none;
       align-items: center;
       justify-content: space-between;
+      gap: 10px;
       background: var(--bg-primary);
       border: 0.5px solid var(--border-light);
       border-radius: var(--radius-lg);
-      padding: 12px 16px;
+      padding: 10px 14px;
       margin-bottom: 1rem;
       cursor: pointer;
-      transition: background 0.15s;
-      gap: 10px;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: opacity 0.25s ease, transform 0.25s ease, background 0.15s;
     }
     .form-accordion:hover { background: var(--bg-secondary); }
-    .form-accordion.visible { display: flex; }
-    .form-accordion-summary { flex: 1; min-width: 0; }
-    .form-accordion-label { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.09em; text-transform: uppercase; margin-bottom: 3px; }
-    .form-accordion-detail { font-size: 13px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .form-accordion-edit { font-size: 12px; font-weight: 500; color: var(--accent); white-space: nowrap; flex-shrink: 0; }
+
+    .form-accordion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 5px;
+      flex: 1;
+      min-width: 0;
+    }
+    .fac { /* form accordion chip */
+      display: inline-flex;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 3px 9px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .fac-ingr  { background: var(--bg-secondary); color: var(--text-primary); border: 0.5px solid var(--border-medium); }
+    .fac-more  { background: transparent; color: var(--text-tertiary); border: 0.5px solid var(--border-light); }
+    .fac-dot   { color: var(--text-tertiary); font-size: 10px; padding: 0 2px; }
+    .fac-cuisine { color: var(--text-secondary); font-size: 12px; }
+    .fac-diet  { background: #fff0f0; color: var(--accent); border: 0.5px solid rgba(192,0,0,0.2); }
+
+    .form-accordion-edit {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+      padding: 4px 12px;
+      border: 1px solid var(--accent);
+      border-radius: 20px;
+      transition: background 0.15s;
+    }
+    .form-accordion:hover .form-accordion-edit { background: #fff0f0; }
 
     @media (max-width: 480px) {
       .input-row { flex-wrap: wrap; }
@@ -630,13 +666,13 @@
   </div>
   -->
 
-  <!-- Accordion summary bar (shown when form is collapsed) -->
+  <!-- Accordion summary bar -->
   <div id="form-accordion" class="form-accordion" onclick="toggleFormSection()">
-    <div class="form-accordion-summary">
-      <div class="form-accordion-label">Your selection</div>
-      <div class="form-accordion-detail" id="form-accordion-detail"></div>
-    </div>
-    <span class="form-accordion-edit">✎ Edit</span>
+    <div id="form-accordion-chips" class="form-accordion-chips"></div>
+    <span class="form-accordion-edit">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Edit
+    </span>
   </div>
 
   <!-- Steps + generate button -->
@@ -765,26 +801,83 @@
   let currentRecipe = null;
 
   /* ── Form Accordion ── */
-  function collapseForm() {
-    document.getElementById('form-section').classList.add('collapsed');
-    const acc = document.getElementById('form-accordion');
-    acc.classList.add('visible');
+  function buildAccordionContent() {
     const region = document.getElementById('region-select').value;
     const dietary = getSelectedDietary();
-    const parts = [
-      ingredients.map(i => i.name).join(', ') || 'No ingredients',
-      region === 'Surprise Me' ? 'Any cuisine' : region.split('/')[0].trim(),
-      ...dietary,
-    ];
-    document.getElementById('form-accordion-detail').textContent = parts.join(' · ');
+    const dietLabels = { 'vegetarian':'Vegetarian','vegan':'Vegan','gluten-free':'Gluten-free','dairy-free':'Dairy-free','nut-free':'Nut-free' };
+    const cuisineName = region === 'Surprise Me' ? 'Any cuisine' : region.split('/')[0].trim();
+
+    const ingrChips = ingredients.slice(0, 3)
+      .map(i => `<span class="fac fac-ingr">${escapeHtml(i.name)}</span>`).join('');
+    const moreChip = ingredients.length > 3
+      ? `<span class="fac fac-more">+${ingredients.length - 3} more</span>` : '';
+    const dot = `<span class="fac fac-dot">·</span>`;
+    const cuisineChip = `<span class="fac fac-cuisine">${escapeHtml(cuisineName)}</span>`;
+    const dietChips = dietary.map(d => `<span class="fac fac-diet">${dietLabels[d]||d}</span>`).join('');
+
+    document.getElementById('form-accordion-chips').innerHTML =
+      ingrChips + moreChip + dot + cuisineChip + (dietChips ? dot + dietChips : '');
+  }
+
+  function collapseForm() {
+    const sec = document.getElementById('form-section');
+    const acc = document.getElementById('form-accordion');
+
+    // Lock to measured height, then animate to 0
+    sec.style.height = sec.scrollHeight + 'px';
+    sec.style.overflow = 'hidden';
+    void sec.offsetWidth;
+    sec.style.transition = 'height 0.36s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease';
+    sec.style.height = '0';
+    sec.style.opacity = '0';
+    sec.style.pointerEvents = 'none';
+
+    // Fade accordion bar in after form starts collapsing
+    setTimeout(() => {
+      buildAccordionContent();
+      acc.style.display = 'flex';
+      void acc.offsetWidth;
+      acc.style.opacity = '1';
+      acc.style.transform = 'translateY(0)';
+    }, 160);
+  }
+
+  function expandForm() {
+    const sec = document.getElementById('form-section');
+    const acc = document.getElementById('form-accordion');
+
+    // Fade accordion out
+    acc.style.opacity = '0';
+    acc.style.transform = 'translateY(-6px)';
+    setTimeout(() => { acc.style.display = 'none'; }, 220);
+
+    // Measure natural height with visibility trick
+    sec.style.transition = 'none';
+    sec.style.height = 'auto';
+    sec.style.opacity = '0';
+    sec.style.visibility = 'hidden';
+    const targetH = sec.scrollHeight;
+    sec.style.height = '0';
+    sec.style.visibility = '';
+    sec.style.pointerEvents = '';
+    void sec.offsetWidth;
+
+    sec.style.transition = 'height 0.36s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease';
+    sec.style.height = targetH + 'px';
+    sec.style.opacity = '1';
+
+    // Free height after transition so content can resize naturally
+    setTimeout(() => {
+      sec.style.height = 'auto';
+      sec.style.overflow = '';
+      sec.style.transition = '';
+    }, 400);
   }
 
   function toggleFormSection() {
     const sec = document.getElementById('form-section');
-    const acc = document.getElementById('form-accordion');
-    const isCollapsed = sec.classList.contains('collapsed');
-    sec.classList.toggle('collapsed', !isCollapsed);
-    acc.classList.toggle('visible', !isCollapsed);
+    const isCollapsed = sec.style.height === '0px' || sec.style.pointerEvents === 'none';
+    if (isCollapsed) expandForm(); else collapseForm();
   }
 
   /* ── Dietary Filters ── */
