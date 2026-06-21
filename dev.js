@@ -15,6 +15,7 @@ if (existsSync(envFile)) {
 }
 
 import handler from './api/recipe.js';
+import scanHandler from './api/scan.js';
 
 const MIME = {
   '.html': 'text/html',
@@ -27,6 +28,24 @@ const MIME = {
 const PORT = 3000;
 
 createServer(async (req, res) => {
+  if (req.method === 'POST' && req.url === '/api/scan') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try { req.body = JSON.parse(body); } catch { req.body = {}; }
+      const mockRes = {
+        _code: 200,
+        status(c) { this._code = c; return this; },
+        json(data) {
+          res.writeHead(this._code, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(data));
+        },
+      };
+      await scanHandler(req, mockRes);
+    });
+    return;
+  }
+
   if (req.method === 'POST' && req.url === '/api/recipe') {
     let body = '';
     req.on('data', c => body += c);

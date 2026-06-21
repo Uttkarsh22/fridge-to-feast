@@ -628,6 +628,24 @@
     }
     .form-accordion:hover .form-accordion-edit { background: #fff0f0; }
 
+    /* Photo scan */
+    .scan-btn { background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); padding: 8px 12px; cursor: pointer; transition: background 0.15s; flex-shrink: 0; display: flex; align-items: center; color: var(--text-secondary); }
+    .scan-btn:hover { background: var(--bg-tertiary); }
+    .scan-panel { margin-top: 12px; background: var(--bg-secondary); border: 0.5px solid var(--border-medium); border-radius: var(--radius-md); overflow: hidden; }
+    .scan-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 0.5px solid var(--border-light); }
+    .scan-panel-title { font-size: 11px; font-weight: 600; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; }
+    .scan-panel-dismiss { background: none; border: none; font-size: 18px; color: var(--text-tertiary); cursor: pointer; padding: 0; line-height: 1; }
+    .scan-loading { padding: 14px; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 10px; }
+    .scan-items { padding: 4px 0; }
+    .scan-item { display: flex; align-items: center; gap: 10px; padding: 9px 14px; border-bottom: 0.5px solid var(--border-light); font-size: 14px; color: var(--text-primary); }
+    .scan-item:last-child { border-bottom: none; }
+    .scan-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+    .scan-item label { cursor: pointer; flex: 1; }
+    .scan-panel-footer { padding: 10px; border-top: 0.5px solid var(--border-light); }
+    .scan-add-btn { width: 100%; padding: 9px; font-size: 14px; font-weight: 600; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-md); cursor: pointer; transition: opacity 0.15s; }
+    .scan-add-btn:hover { opacity: 0.88; }
+    .scan-error { padding: 12px 14px; font-size: 13px; color: #a02020; }
+
     @media (max-width: 480px) {
       .input-row { flex-wrap: wrap; }
       input[type="text"] { flex: 1 1 100%; }
@@ -700,6 +718,10 @@
         </select>
       </div>
       <button class="add-btn" onclick="addIngredient()">+ Add</button>
+      <button class="scan-btn" onclick="document.getElementById('scan-input').click()" title="Scan a photo to detect ingredients">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <input type="file" id="scan-input" accept="image/*" capture="environment" style="display:none" />
     </div>
     <div class="chips-header" id="chips-header" style="display:none;">
       <span class="chips-count" id="chips-count"></span>
@@ -708,6 +730,7 @@
     <div class="chips-container" id="chips-container">
       <span class="empty-hint">No ingredients added yet. Qty is optional.</span>
     </div>
+    <div id="scan-panel" class="scan-panel" style="display:none;"></div>
   </div>
 
   <!-- Step 2: Choose Region -->
@@ -892,6 +915,103 @@
     return ['diet-vegetarian','diet-vegan','diet-gluten-free','diet-dairy-free','diet-nut-free']
       .filter(id => document.getElementById(id)?.checked)
       .map(id => document.getElementById(id).value);
+  }
+
+  /* ── Photo Scan ── */
+  document.getElementById('scan-input').addEventListener('change', async function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = '';
+
+    const panel = document.getElementById('scan-panel');
+    panel.style.display = 'block';
+    panel.innerHTML = `
+      <div class="scan-panel-header">
+        <span class="scan-panel-title">Scanning photo…</span>
+        <button class="scan-panel-dismiss" onclick="closeScanPanel()">×</button>
+      </div>
+      <div class="scan-loading">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        Identifying ingredients…
+      </div>`;
+
+    try {
+      const base64 = await resizeAndEncode(file, 800);
+      const r = await fetch('/api/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageBase64: base64, mimeType: file.type || 'image/jpeg' }),
+      });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Scan failed');
+      const found = data.ingredients || [];
+      if (!found.length) throw new Error(data.error || 'No ingredients detected. Try a clearer photo.');
+      renderScanResults(found);
+    } catch (err) {
+      panel.innerHTML = `
+        <div class="scan-panel-header">
+          <span class="scan-panel-title">Scan failed</span>
+          <button class="scan-panel-dismiss" onclick="closeScanPanel()">×</button>
+        </div>
+        <div class="scan-error">${escapeHtml(err.message)}</div>`;
+    }
+  });
+
+  function resizeAndEncode(file, maxWidth) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxWidth / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width  = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82).split(',')[1]);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function renderScanResults(found) {
+    const panel = document.getElementById('scan-panel');
+    panel.innerHTML = `
+      <div class="scan-panel-header">
+        <span class="scan-panel-title">Found ${found.length} ingredient${found.length !== 1 ? 's' : ''}</span>
+        <button class="scan-panel-dismiss" onclick="closeScanPanel()">×</button>
+      </div>
+      <div class="scan-items">
+        ${found.map((name, i) => `
+          <div class="scan-item">
+            <input type="checkbox" id="scan-chk-${i}" value="${escapeHtml(name)}" checked />
+            <label for="scan-chk-${i}">${escapeHtml(name)}</label>
+          </div>`).join('')}
+      </div>
+      <div class="scan-panel-footer">
+        <button class="scan-add-btn" onclick="addScannedIngredients()">Add selected ingredients</button>
+      </div>`;
+  }
+
+  function addScannedIngredients() {
+    document.querySelectorAll('#scan-panel input[type="checkbox"]:checked').forEach(cb => {
+      const name = cb.value;
+      if (name && !ingredients.some(i => i.name.toLowerCase() === name.toLowerCase())) {
+        ingredients.push({ name, qty: '', unit: 'pcs' });
+      }
+    });
+    renderChips();
+    closeScanPanel();
+  }
+
+  function closeScanPanel() {
+    const panel = document.getElementById('scan-panel');
+    panel.style.display = 'none';
+    panel.innerHTML = '';
   }
 
   /* ── Add Ingredient ── */
