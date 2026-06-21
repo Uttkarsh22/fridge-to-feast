@@ -52,7 +52,20 @@ RULE 4 — SHORT STEPS: Each step = 1 to 2 sentences only. No long paragraphs.
 
 RULE 5 — USE THE USER'S INGREDIENTS: Build the recipe around what the user already has. Only add very basic pantry items if truly needed.
 
-RULE 6 — RESPECT DIETARY RESTRICTIONS: If dietary restrictions are given, follow them strictly. Do not include any ingredient that violates them.
+RULE 6 — DIETARY RESTRICTIONS ARE ABSOLUTE (HIGHEST PRIORITY RULE):
+If dietary restrictions are listed, they override everything else — including ingredients the user supplied. Read each restriction below carefully and apply it exactly.
+
+VEGETARIAN: The recipe must contain NO meat, NO poultry (chicken, turkey), NO fish, NO seafood (prawns, shrimp). Eggs and dairy are allowed.
+
+VEGAN: The recipe must contain NO animal products of any kind. This means: no meat, no poultry, no fish, no seafood, no eggs, no milk, no butter, no cream, no cheese, no paneer, no ghee, no curd/yogurt, no honey. Use oil instead of butter or ghee. If the user listed an animal product (e.g. milk, egg, chicken) but selected vegan, do NOT use that ingredient in the recipe.
+
+GLUTEN-FREE: The recipe must contain NO gluten. Banned ingredients: wheat flour (maida, atta), bread, pasta, noodles, semolina (sooji/rava), barley, rye, regular soy sauce, oats (unless certified GF). Safe ingredients: rice, rice flour, corn, potato, lentils, all vegetables, all meats, eggs, dairy, oil, most spices. If the user listed a gluten ingredient (e.g. bread, pasta, atta) but selected gluten-free, do NOT use that ingredient.
+
+DAIRY-FREE: The recipe must contain NO dairy products. Banned: milk, butter, cream, cheese, paneer, ghee, curd, yogurt. Use oil instead of butter/ghee. Use water or coconut milk instead of milk. If the user listed a dairy ingredient but selected dairy-free, do NOT use it.
+
+NUT-FREE: The recipe must contain NO nuts. Banned: almonds, cashews, peanuts, walnuts, pistachios, pecans, hazelnuts, peanut oil, almond milk, cashew paste. Coconut and sesame seeds are allowed. If the user listed a nut but selected nut-free, do NOT use it.
+
+IMPORTANT: If a user ingredient conflicts with a dietary restriction, skip that ingredient silently and build the recipe with the remaining ingredients. Never violate a dietary restriction.
 
 Respond ONLY with a valid JSON object — no markdown, no extra text:
 {
@@ -96,7 +109,15 @@ function buildUserMessage(ingredients, region, dietary) {
 
   let dietaryText = '';
   if (dietary && dietary.length > 0) {
-    dietaryText = `\nDietary restrictions: Must be ${dietary.join(', ')}.`;
+    const labels = {
+      'vegetarian': 'VEGETARIAN (no meat, no fish, no seafood)',
+      'vegan': 'VEGAN (no meat, no fish, no eggs, no milk, no butter, no ghee, no dairy of any kind)',
+      'gluten-free': 'GLUTEN-FREE (no wheat, no flour/maida/atta, no bread, no pasta, no noodles, no soy sauce)',
+      'dairy-free': 'DAIRY-FREE (no milk, no butter, no cream, no cheese, no paneer, no ghee, no curd)',
+      'nut-free': 'NUT-FREE (no almonds, no cashews, no peanuts, no walnuts, no any nut)',
+    };
+    const described = dietary.map(d => labels[d] || d).join(' AND ');
+    dietaryText = `\n\nDIETARY RESTRICTIONS — THIS IS MANDATORY: The recipe MUST be ${described}. Do NOT use any ingredient that violates this, even if the user listed it. Skip conflicting user ingredients silently.`;
   }
 
   return `The user has these ingredients: ${ingredientList}.\n${cuisineInstruction}${dietaryText}`;
