@@ -141,7 +141,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: 'Meta-Llama-3.3-70B-Instruct',
+        model: 'gemma-4-31b-it',
         max_tokens: 2048,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -150,7 +150,11 @@ export default async function handler(req, res) {
       }),
     });
 
-    const data = await response.json();
+    const raw = await response.text();
+    let data;
+    try { data = JSON.parse(raw); } catch (_) {
+      return res.status(502).json({ error: `Krutrim returned unexpected response: ${raw.slice(0, 120)}` });
+    }
 
     if (!response.ok) {
       return res.status(response.status).json({ error: data?.error?.message || 'Krutrim API error' });
