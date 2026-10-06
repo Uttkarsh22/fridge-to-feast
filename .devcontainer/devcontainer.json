@@ -1,0 +1,6 @@
+{
+  "name": "fridge-to-feast",
+  "features": {
+    "ghcr.io/wandb/catnip/feature:1": {}
+  }
+}

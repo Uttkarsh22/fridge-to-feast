@@ -2,6 +2,10 @@
   "name": "fridge-to-feast",
   "version": "1.0.0",
   "type": "module",
+  "scripts": {
+    "dev": "node dev.js",
+    "start": "node dev.js"
+  },
   "engines": {
     "node": ">=18"
   }
